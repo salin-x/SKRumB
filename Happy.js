@@ -1,0 +1,165 @@
+// Initialize the Variables
+let songIndex = 0;
+let audioElement = new Audio('songs/1.mp3');
+let masterPlay = document.getElementById('masterPlay');
+let myProgressBar = document.getElementById('myProgressBar');
+let gif = document.getElementById('gif');
+let masterSongName = document.getElementById('masterSongName');
+let songItems = Array.from(document.getElementsByClassName('songItem'));
+
+let songs = [
+    {
+        filePath: 'songs 2/11.mp3',
+        songName: 'Jamal Kudu-ANIMAL',
+        coverPath: 'covers 2/jamal kudu.png'
+    },
+    {
+        filePath: 'songs 2/12.mp3',
+        songName: 'Mahiye Jinna Sohna - Darshan Raval',
+        coverPath: 'covers 2/darshan.png'
+    },
+    {
+        filePath: 'songs 2/13.mp3',
+        songName: 'Dil Se Dil Tak - Bawaal',
+        coverPath: 'covers 2/bawaal.png'
+    },
+    {
+        filePath: 'songs 2/14.mp3',
+        songName: 'Lutt Putt Gaya - Dunki',
+        coverPath: 'covers 2/dunki.png'
+    },
+    {
+        filePath: 'songs 2/15.mp3',
+        songName: 'Clouds - JVKE',
+        coverPath: 'covers 2/jvke.png'
+    },
+    {
+        filePath: 'songs 2/16.mp3',
+        songName: 'Khileya - MITRAZ , Shirley Setia',
+        coverPath: 'covers 2/khileya.png'
+    },
+    {
+        filePath: 'songs 2/17.mp3',
+        songName: 'Maan Meri Jaan - KING , Nick Jonas',
+        coverPath: 'covers 2/king.png'
+    },
+    {
+        filePath: 'songs 2/18.mp3',
+        songName: 'Hips Dont Lie - Shakira',
+        coverPath: 'covers 2/shakira.png'
+    },
+    {
+        filePath: 'songs 2/19.mp3',
+        songName: 'Sunday - Aditya A',
+        coverPath: 'covers 2/aditya a.png'
+    },
+    
+];
+
+const playNextSong = () => {
+    songIndex = (songIndex + 1) % songs.length;
+    playSong();
+};
+
+const playPreviousSong = () => {
+    songIndex = (songIndex - 1 + songs.length) % songs.length;
+    playSong();
+};
+
+
+// Function to play a specific song
+const playSong = () => {
+    audioElement.src = songs[songIndex].filePath;
+    masterSongName.innerText = songs[songIndex].songName;
+    audioElement.currentTime = 0;
+    audioElement.play();
+    masterPlay.classList.remove('fa-play-circle');
+    masterPlay.classList.add('fa-pause-circle');
+    gif.style.opacity = 1;
+};
+
+/// Function to update the play/pause button icon
+const updatePlayPauseButton = () => {
+    if (audioElement.paused || audioElement.currentTime <= 0) {
+        // If audio is paused or has never started playing
+        masterPlay.classList.remove('fa-pause-circle');
+        masterPlay.classList.add('fa-play-circle');
+    } else {
+        // If audio is currently playing
+        masterPlay.classList.remove('fa-play-circle');
+        masterPlay.classList.add('fa-pause-circle');
+    }
+};
+
+// Handle play/pause click
+masterPlay.addEventListener('click', () => {
+    if (audioElement.paused || audioElement.currentTime <= 0) {
+        // If audio is paused or has never started playing
+        if (pausedTime !== 0) {
+            // If there's a paused time stored, resume from there
+            audioElement.currentTime = pausedTime;
+            audioElement.play(); // Start playing
+            pausedTime = 0; // Reset paused time after resuming playback
+        } else {
+            playSong(); // If no paused time, play from the beginning
+        }
+    } else {
+        // If audio is currently playing, pause it
+        audioElement.pause();
+        // Store the current time as the paused time
+        pausedTime = audioElement.currentTime;
+    }
+    // Update the play/pause button icon after toggling playback state
+    updatePlayPauseButton();
+});
+
+// Update the play/pause button icon initially
+updatePlayPauseButton();
+
+// Listen to the 'ended' event for playing the next song
+audioElement.addEventListener('ended', playNextSong);
+
+// ... (your existing event listeners)
+
+// Function to initialize song items
+const initializeSongItems = () => {
+    songItems.forEach((element, i) => {
+        element.getElementsByTagName("img")[0].src = songs[i].coverPath;
+        element.getElementsByClassName("songName")[0].innerText = songs[i].songName;
+        element.getElementsByClassName("songItemPlay")[0].addEventListener('click', (e) => {
+            makeAllPlays();
+            songIndex = i;
+            e.target.classList.remove('fa-play-circle');
+            e.target.classList.add('fa-pause-circle');
+            playSong();
+        });
+    });
+};
+
+// Function to make all plays inactive
+const makeAllPlays = () => {
+    Array.from(document.getElementsByClassName('songItemPlay')).forEach((element) => {
+        element.classList.remove('fa-pause-circle');
+        element.classList.add('fa-play-circle');
+    });
+};
+
+// Function to update the progress bar/slider position as the audio plays
+const updateProgressBar = () => {
+    const currentTime = audioElement.currentTime;
+    const duration = audioElement.duration;
+    const progressBar = (currentTime / duration) * 100;
+    myProgressBar.value = progressBar;
+};
+
+// Listen to the 'timeupdate' event to update the progress bar/slider position
+audioElement.addEventListener('timeupdate', updateProgressBar);
+
+// Function to handle clicking on the previous button
+document.getElementById('previous').addEventListener('click', playPreviousSong);
+
+// Function to handle clicking on the next button
+document.getElementById('next').addEventListener('click', playNextSong);
+
+// Initialize song items
+initializeSongItems();
